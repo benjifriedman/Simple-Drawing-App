@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simple Drawing App</title>
+    <style>
+      canvas {
+        border: 1px solid black;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Simple Drawing App</h1>
+    <canvas id="myCanvas" width="800" height="400"></canvas>
+    <br />
+    <label for="color">Line Color:</label>
+    <select id="color">
+      <option value="red">Red</option>
+      <option value="green">Green</option>
+      <option value="blue">Blue</option>
+      <option value="yellow">Yellow</option>
+      <option value="purple">Purple</option>
+      <option value="orange">Orange</option>
+      <option value="black" selected>Black</option>
+    </select>
+    <br />
+    <label for="thickness">Line Thickness:</label>
+    <input type="range" id="thickness" min="1" max="10" step="1" value="2" />
+    <br />
+    <label for="bgColor">Background Color:</label>
+    <select id="bgColor">
+      <option value="white" selected>White</option>
+      <option value="red">Red</option>
+      <option value="green">Green</option>
+      <option value="blue">Blue</option>
+      <option value="yellow">Yellow</option>
+      <option value="purple">Purple</option>
+      <option value="orange">Orange</option>
+      <option value="black">Black</option>
+    </select>
+    <br />
+    <label for="width">Canvas Width:</label>
+    <select id="width">
+      <option value="400">400px</option>
+      <option value="600">600px</option>
+      <option value="800" selected>800px</option>
+      <option value="1000">1000px</option>
+    </select>
+    <br />
+    <label for="height">Canvas Height:</label>
+    <select id="height">
+      <option value="300">300px</option>
+      <option value="400" selected>400px</option>
+      <option value="600">600px</option>
+      <option value="800">800px</option>
+    </select>
+    <br />
+    <button id="undo">Undo</button>
+    <button id="save">Save as JPG</button>
+
+    <script>
+      const canvas = document.getElementById("myCanvas");
+      const ctx = canvas.getContext("2d");
+      let drawing = false;
+      let lineColor = "black";
+      let lineWidth = 2;
+      const paths = [];
+      let currentPath = [];
+
+      function setBackground(color) {
+        ctx.fillStyle = color;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      setBackground("white");
+
+      function updateCanvasSize() {
+        canvas.width = parseInt(document.getElementById("width").value);
+        canvas.height = parseInt(document.getElementById("height").value);
+        setBackground(document.getElementById("bgColor").value);
+        redrawPaths();
+      }
+
+      document
+        .getElementById("width")
+        .addEventListener("change", updateCanvasSize);
+      document
+        .getElementById("height")
+        .addEventListener("change", updateCanvasSize);
+
+      canvas.addEventListener("mousedown", (e) => {
+        drawing = true;
+        ctx.beginPath();
+        ctx.moveTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+        currentPath.push({
+          x: e.clientX - canvas.offsetLeft,
+          y: e.clientY - canvas.offsetTop,
+          color: lineColor,
+          width: lineWidth,
+        });
+      });
+
+      canvas.addEventListener("mousemove", (e) => {
+        if (!drawing) return;
+        ctx.strokeStyle = lineColor;
+        ctx.lineWidth = lineWidth;
+        ctx.lineTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+        ctx.stroke();
+        currentPath.push({
+          x: e.clientX - canvas.offsetLeft,
+          y: e.clientY - canvas.offsetTop,
+          color: lineColor,
+          width: lineWidth,
+        });
+      });
+
+      canvas.addEventListener("mouseup", () => {
+        if (drawing) {
+          paths.push(currentPath);
+          currentPath = [];
+        }
+        drawing = false;
+      });
+
+      document.getElementById("color").addEventListener("change", (e) => {
+        lineColor = e.target.value;
+      });
+
+      document.getElementById("thickness").addEventListener("input", (e) => {
+        lineWidth = e.target.value;
+      });
+
+      document.getElementById("bgColor").addEventListener("change", (e) => {
+        setBackground(e.target.value);
+        redrawPaths();
+      });
+
+      document.getElementById("undo").addEventListener("click", () => {
+        if (paths.length > 0) {
+          paths.pop();
+          setBackground(document.getElementById("bgColor").value);
+          redrawPaths();
+        }
+      });
+
+      function redrawPaths() {
+        for (const path of paths) {
+          ctx.beginPath();
+          ctx.moveTo(path[0].x, path[0].y);
+
+          for (const point of path) {
+            ctx.strokeStyle = point.color;
+            ctx.lineWidth = point.width;
+            ctx.lineTo(point.x, point.y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      document.getElementById("save").addEventListener("click", () => {
+        const link = document.createElement("a");
+        link.href = canvas.toDataURL("image/jpeg");
+        link.download = "drawing.jpg";
+        link.click();
+      });
+    </script>
+  </body>
+</html>
