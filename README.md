@@ -1,3 +1,3 @@
 # Simple Drawing App
 
-![What the app looks like](https://imgur.com/BdLw6Qg)
+![What the app looks like](https://i.imgur.com/BdLw6Qg.jpg)
